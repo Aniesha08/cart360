@@ -79,7 +79,7 @@ void setup()
 void loop()
 {
   chooseMode();
-  setRGB();
+  setRGB(mode);
   selectMode();
 }
 /******************CHOOSEMODE(): IMPLEMENT *********************************
@@ -124,9 +124,42 @@ if (digitalRead(BUTTON_MODE_PIN) == HIGH){
  * if mode is 4 - RGB LED iS PURPLE
  * YOU MUST USE A SWITCH CASE CONSTRUCT (NOT A SERIES OF IF / ELSE STATEMENTS
 **************************************************************************/
-void setRGB()
+
+// Define the colors to display in the RGB light for each mode
+void setRGB(int modeButtonColor)
 {
-  //IMPLEMENT
+  switch(modeButtonColor){
+    
+   case 0:
+    digitalWrite(LED_PIN_R,0);
+    digitalWrite(LED_PIN_G,0);
+    digitalWrite(LED_PIN_B,0);
+    break;
+    
+   case 1:
+    digitalWrite(LED_PIN_R,255);
+    digitalWrite(LED_PIN_G,0);
+    digitalWrite(LED_PIN_B,0);
+    break;
+
+   case 2:
+    digitalWrite(LED_PIN_R,0);
+    digitalWrite(LED_PIN_G,0);
+    digitalWrite(LED_PIN_B,255);
+    break;
+    
+   case 3:
+    digitalWrite(LED_PIN_R,0);
+    digitalWrite(LED_PIN_G,255);
+    digitalWrite(LED_PIN_B,0);
+    break;
+    
+   case 4:
+    digitalWrite(LED_PIN_R,102);
+    digitalWrite(LED_PIN_G,12);
+    digitalWrite(LED_PIN_B,125);
+    break;
+  }
 }
 /**********************SELECTMODE() DO NOT CHANGE *******************************
  * INSTRUCTIONS: 
