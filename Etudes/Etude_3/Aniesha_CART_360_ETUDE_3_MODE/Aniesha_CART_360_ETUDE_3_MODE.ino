@@ -203,10 +203,16 @@ void selectMode()
  * INSTRUCTIONS:
  * this function should ensure that any notes recorded are no longer available
 **************************************************************************/
+
+// The for loop will go through the maximum notes until 16 and 
+// resets the value of the array to the initial value (0)
+// therefore, there is free again to record a new set of notes
 void reset()
 {
-  // IMPLEMENT
-  
+  for (int i = 0; i < MAX_NOTES; i++){
+    notes [i] = 0;
+    countNotes = 0;
+  }  
 }
 /******************LIVE(): IMPLEMENT **************************************
  * INSTRUCTIONS:
@@ -216,9 +222,11 @@ void reset()
  * SO: you need read in the input from the analog input (linked to the button-resistor ladder combo)
  * THEN - output the note to the buzzer using the tone() function
 **************************************************************************/
+
+// Once the buttons are pressed, the tones from the buttons are sent to Piezzo through the A0 pin
 void live()
 {
-    //IMPLEMENT
+  tone(BUZZER_PIN, analogRead(NOTE_IN_PIN), duration);
 }
 /******************RECORD(): IMPLEMENT **********************************
  * INSTRUCTIONS:
