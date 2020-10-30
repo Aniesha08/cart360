@@ -20,6 +20,17 @@
  * PROVIDE COMMENTS FOR ANY OF THE CODE IMPLEMENTED
  * GOOD LUCK!
  */
+
+/**** PITCHES LIBRARY ********************************************************/
+#include "pitches.h"
+
+/******** PITCH RANGE *****************************************************/
+#define NOTE_C5  523
+#define NOTE_D5  587
+#define NOTE_E5  659
+#define NOTE_F5  698
+#define NOTE_G5  784
+
 /**** CONSTANTS ********************************************************/
 
 #define BUTTON_MODE_PIN 2 // Button to change the mode
@@ -41,6 +52,14 @@ const int duration = 200;
 // constant for pin to output for buzzer 
 #define BUZZER_PIN 3 // PWM
 
+/******** VARIABLES FOR LOOPER *****************************************************/
+// check for repetition
+int randomRepCheck [MAX_NOTES]; 
+// store unrepeated random numbers
+int mainRandomNumber [MAX_NOTES]; 
+// for while loop to check if all 16 spots of the mainRandomNumber array are filled
+int j = 1; 
+
 /******** VARIABLES *****************************************************/
 // counter for how many notes we have
 int countNotes = 0;
@@ -56,6 +75,14 @@ int notes [MAX_NOTES];
 void setup()
 {
   pinMode(BUTTON_MODE_PIN, INPUT);
+// Define the output for the RGB led and Piezo
+  pinMode(LED_PIN_R, OUTPUT);  
+  pinMode(LED_PIN_G, OUTPUT);
+  pinMode(LED_PIN_B, OUTPUT);
+  pinMode(BUZZER_PIN,OUTPUT);
+// Define the console window for debugging
+  Serial.begin(115200);
+  while(!Serial); 
 }
 
 /**********************LOOP() DO NOT CHANGE *******************************
@@ -71,7 +98,7 @@ void setup()
 void loop()
 {
   chooseMode();
-  setRGB();
+  setRGB(mode);
   selectMode();
 }
 /******************CHOOSEMODE(): IMPLEMENT *********************************
@@ -89,22 +116,69 @@ void loop()
  * (i.e. if mode ==2 and we press, then mode ==3) ...
 **************************************************************************/
 void chooseMode(){
-  // IMPLEMENT
+// Since the button is connected to 2 on the digital side, we say, DigitalRead
+// If the button is pressed (HIGH)... 
+if (digitalRead(BUTTON_MODE_PIN) == HIGH){
+  // and if the mode value is less than 4
+  if (mode < 4){
+  // add 1 to the value of mode
+    mode++;
+  }
+  else{
+    // reset the mode back to a value of 0
+    mode = 0;
+  }
+  // run the code only once whenever the button is pressed
+  delay(1000);
+}
 }
 
 /******************SETRGB(): IMPLEMENT *********************************
  * INSTRUCTIONS:
  * Depending on the value of the mode variable:
  * if the mode is 0 - RGB LED IS OFF
- * if the mode is 1 - RGB LED IS BLUE
- * if mode is 2 - RGB LED IS RED
- * if mode is 3 - RGB LED IS GREEN
- * if mode is 4 - RGB LED iS PURPLE
+ * if the mode is 1 - RGB LED IS BLUE (live)
+ * if mode is 2 - RGB LED IS RED (record)
+ * if mode is 3 - RGB LED IS GREEN (play)
+ * if mode is 4 - RGB LED iS PURPLE (looper)
  * YOU MUST USE A SWITCH CASE CONSTRUCT (NOT A SERIES OF IF / ELSE STATEMENTS
 **************************************************************************/
-void setRGB()
+
+// Define the colors to display in the RGB light for each mode
+void setRGB(int modeButtonColor)
 {
-  //IMPLEMENT
+  switch(modeButtonColor){
+    
+   case 0:
+    digitalWrite(LED_PIN_R,0);
+    digitalWrite(LED_PIN_G,0);
+    digitalWrite(LED_PIN_B,0);
+    break;
+    
+   case 1:
+    digitalWrite(LED_PIN_R,255);
+    digitalWrite(LED_PIN_G,0);
+    digitalWrite(LED_PIN_B,0);
+    break;
+
+   case 2:
+    digitalWrite(LED_PIN_R,0);
+    digitalWrite(LED_PIN_G,0);
+    digitalWrite(LED_PIN_B,255);
+    break;
+    
+   case 3:
+    digitalWrite(LED_PIN_R,0);
+    digitalWrite(LED_PIN_G,255);
+    digitalWrite(LED_PIN_B,0);
+    break;
+    
+   case 4:
+    digitalWrite(LED_PIN_R,102);
+    digitalWrite(LED_PIN_G,12);
+    digitalWrite(LED_PIN_B,125);
+    break;
+  }
 }
 /**********************SELECTMODE() DO NOT CHANGE *******************************
  * INSTRUCTIONS: 
@@ -148,11 +222,18 @@ void selectMode()
  * INSTRUCTIONS:
  * this function should ensure that any notes recorded are no longer available
 **************************************************************************/
+
+// The for loop will go through the maximum notes until 16 and 
+// resets the value of the array to the initial value (0)
+// therefore, there is free again to record a new set of notes
 void reset()
 {
-  // IMPLEMENT
-  
+  for (int i = 0; i < MAX_NOTES; i++){
+    notes [i] = 0;
+    countNotes = 0;
+  }  
 }
+
 /******************LIVE(): IMPLEMENT **************************************
  * INSTRUCTIONS:
  * this function will play the corresponding notes 
@@ -161,10 +242,13 @@ void reset()
  * SO: you need read in the input from the analog input (linked to the button-resistor ladder combo)
  * THEN - output the note to the buzzer using the tone() function
 **************************************************************************/
+
+// Once the buttons are pressed, the tones from the buttons are sent to Piezzo through the A0 pin
 void live()
 {
-    //IMPLEMENT
+  tone(BUZZER_PIN, analogRead(NOTE_IN_PIN), duration);
 }
+
 /******************RECORD(): IMPLEMENT **********************************
  * INSTRUCTIONS:
  * this function will play the corresponding notes 
@@ -176,7 +260,16 @@ void live()
 **************************************************************************/
 void record()
 {
-  // IMPLEMENT
+  // As long as the number of notes being played has not reached to maximum # of notes (16)
+  while (countNotes < MAX_NOTES){
+    delay(2000);
+    // play the tone
+    tone(BUZZER_PIN, analogRead(NOTE_IN_PIN), duration);
+    // store the played note in the array
+    notes[countNotes] = {analogRead(NOTE_IN_PIN)};
+    // go to the next element of the array
+    countNotes += 1; 
+  }
 }
 /******************PLAY(): IMPLEMENT ************************************
  * INSTRUCTIONS:
@@ -190,7 +283,14 @@ void record()
 **************************************************************************/
 void play()
 {
-  // IMPLEMENT
+  for (int i = 0; i < MAX_NOTES; i++){
+    tone(BUZZER_PIN, notes[i], duration);
+    delay(duration);
+  }
+  delay(duration*3);
+    if (digitalRead(BUTTON_MODE_PIN) == HIGH){
+      noTone(BUZZER_PIN);
+    }
 }
 /******************LOOPMODE(): IMPLEMENT *********************************
  * INSTRUCTIONS:
@@ -202,9 +302,48 @@ void play()
  * ALSO: as long as we are in this mode, the notes are played over and over again
  * BE CAREFUL: make sure you allow for the user to get to another mode from the mode button...
 **************************************************************************/
+// Assistance from Zahra Ahmadi *
+
 void looper()
 {
-  //IMPLEMENT
+  // CODE TO RANDOMIZE THE ORDER OF THE NOTES IN THE ARRAY
+  // verify if the condition for the random generated number is true or false
+  boolean randomAlreadyExists = false;
+    
+  while (j < MAX_NOTES) {
+    // store the new random generated number
+    int newRandom = random(1, 16);
+    // the condition makes sure that the new random number is not repetitive  
+    for (int i= 1; i < MAX_NOTES; i++){
+        if (newRandom == randomRepCheck[i]) {
+        // If it is repetitive, change the state of the boolean
+        randomAlreadyExists = true;
+        break;
+        }
+       }
+
+    // if the boolean is false   
+    if (!randomAlreadyExists) {
+        // assign the unrepeated numbers to the mainRandomNumber array
+        mainRandomNumber[j] = newRandom;
+        // also assign it to the randomRepCheck, since this verifies the repetitiveness
+        randomRepCheck[j] = newRandom;
+        // move to the next element 
+        j++;
+        }
+        // reset the value of the boolean to default
+        randomAlreadyExists = false;
+       }
+
+  // PLAY THE RECORDED NOTES IN THE ORDER DETERMINED ABOVE
+    for (int k = 0; k < MAX_NOTES; k++) {
+      // Make sure that the pauses won't be played (0)  
+      if (notes[mainRandomNumber[k]] != 0) {
+        tone(BUZZER_PIN, notes[mainRandomNumber[k]], duration);
+        delay(duration);
+        }
+      }
+      delay(duration);
 }
 
 /**************************************************************************/

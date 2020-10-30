@@ -48,6 +48,15 @@ int mode = 0; // start at off
 // array to hold the notes played (for record/play mode)
 int notes [MAX_NOTES]; 
 
+
+/******** VARIABLES FOR LOOPER *****************************************************/
+// check for repetition
+int randomRepCheck [MAX_NOTES]; 
+// store unrepeated random numbers
+int mainRandomNumber [MAX_NOTES]; 
+// for while loop to check if all 16 spots of the mainRandomNumber array are filled
+int j = 1; 
+
 /*************************************************************************/
 
 
@@ -214,6 +223,7 @@ void reset()
     countNotes = 0;
   }  
 }
+
 /******************LIVE(): IMPLEMENT **************************************
  * INSTRUCTIONS:
  * this function will play the corresponding notes 
@@ -239,7 +249,16 @@ void live()
 **************************************************************************/
 void record()
 {
-  // IMPLEMENT
+  // As long as the number of notes being played has not reached to maximum # of notes (16)
+  while (countNotes < MAX_NOTES){
+    delay(2000);
+    // play the tone
+    tone(BUZZER_PIN, analogRead(NOTE_IN_PIN), duration);
+    // store the played note in the array
+    notes[countNotes] = {analogRead(NOTE_IN_PIN)};
+    // go to the next element of the array
+    countNotes += 1; 
+  }
 }
 /******************PLAY(): IMPLEMENT ************************************
  * INSTRUCTIONS:
@@ -253,7 +272,14 @@ void record()
 **************************************************************************/
 void play()
 {
-  // IMPLEMENT
+  for (int i = 0; i < MAX_NOTES; i++){
+    tone(BUZZER_PIN, notes[i], duration);
+    delay(duration);
+  }
+  delay(duration*3);
+    if (digitalRead(BUTTON_MODE_PIN) == HIGH){
+      noTone(BUZZER_PIN);
+    }
 }
 /******************LOOPMODE(): IMPLEMENT *********************************
  * INSTRUCTIONS:
@@ -265,9 +291,49 @@ void play()
  * ALSO: as long as we are in this mode, the notes are played over and over again
  * BE CAREFUL: make sure you allow for the user to get to another mode from the mode button...
 **************************************************************************/
+
+// Assistance from Zahra Ahmadi *
+
 void looper()
 {
-  //IMPLEMENT
+  // CODE TO RANDOMIZE THE ORDER OF THE NOTES IN THE ARRAY
+  // verify if the condition for the random generated number is true or false
+  boolean randomAlreadyExists = false;
+    
+  while (j < MAX_NOTES) {
+    // store the new random generated number
+    int newRandom = random(1, 16);
+    // the condition makes sure that the new random number is not repetitive  
+    for (int i= 1; i < MAX_NOTES; i++){
+        if (newRandom == randomRepCheck[i]) {
+        // If it is repetitive, change the state of the boolean
+        randomAlreadyExists = true;
+        break;
+        }
+       }
+
+    // if the boolean is false   
+    if (!randomAlreadyExists) {
+        // assign the unrepeated numbers to the mainRandomNumber array
+        mainRandomNumber[j] = newRandom;
+        // also assign it to the randomRepCheck, since this verifies the repetitiveness
+        randomRepCheck[j] = newRandom;
+        // move to the next element 
+        j++;
+        }
+        // reset the value of the boolean to default
+        randomAlreadyExists = false;
+       }
+
+  // PLAY THE RECORDED NOTES IN THE ORDER DETERMINED ABOVE
+    for (int k = 0; k < MAX_NOTES; k++) {
+      // Make sure that the pauses won't be played (0)  
+      if (notes[mainRandomNumber[k]] != 0) {
+        tone(BUZZER_PIN, notes[mainRandomNumber[k]], duration);
+        delay(duration);
+        }
+      }
+      delay(duration);
 }
 
 /**************************************************************************/
