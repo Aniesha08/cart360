@@ -336,4 +336,25 @@ void looper()
       delay(duration);
 }
 
-/**************************************************************************/
+/************************************************************************** 
+
+Provide an analysis of the observed behavior of the resistor ladder (keyboard), mode selector and what is occurring on the Arduino as a voltage. How does the input become audible sound?
+
+The circuit has 5 buttons in total. Four of them act as a keyboard which is used to play the tones while the fifth one is designated to be used as a mode controller (reset, live, 
+record, play and looper). The four buttons (keyboard) are connected using a resistor ladder (the resistors are in series circuit position). Therefore, there is no need to connect 
+each button to a different analog to digital converter. Instead, there are all connected to the A0 pin. 
+
+A voltage divider is created due to the resistor ladder. This way, each button is delivering its own unique voltage to the analog A0 pin. In the resistor ladder, since the primary 
+resistors' resistance value is being added to the following ones, the further the buttons would be from the reference voltage, the less voltage they can send to the Arduino. 
+Therefore, each keyboard button press is delivering just a fraction from the total voltage of 5V. 
+
+With each mode selector, the colour of the RGB LED light changes in order to convey which mode the user is on. With each mode selection, the output changes as each mode is 
+designed with its own function. For example, the record mode will let you play the tones while the play button will playback the tones that were recorded. 
+
+The input from the keyboard buttons is read from the analog input is converted into notes through the tones() function. Then, the note is outputted as sound 
+through the Piezo. With the maximum of 16 tones that can be played each time, the use of the array and randomization creates a variety in the audible sound. 
+Specially, in the looper. Mechanically speaking, “[the piezo works] by using a piezo crystal, a special material that changes shape when voltage is applied to it. 
+If the crystal pushes against a diaphragm, like a tiny speaker cone, it can generate a pressure wave which the human ear picks up as sound” 
+(Adafruit - https://learn.adafruit.com/using-piezo-buzzers-with-circuitpython-arduino). 
+
+**************************************************************************/
